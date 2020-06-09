@@ -14,11 +14,16 @@ from gensim.models.coherencemodel import CoherenceModel
 import pyLDAvis.gensim
 
 
-tweets_df = pd.read_csv('Twitter_Data_Precovid.csv').drop("slno", axis="columns").drop("date", axis="columns"). \
+tweets_df = pd.read_csv('Twitter_Data_Postcovid (3).csv').drop("slno", axis="columns").drop("date", axis="columns"). \
     drop("username", axis="columns").drop("location", axis="columns").drop("sentiment", axis="columns")
 
-additional_stop_words = ["amex", "american", "express", "americanexpress", "mastercard", "thank you", "visa", "credit",
-                         "card", "american express",
+additional_stop_words = ["big", "hurt", "saving", "review", "leave", "home", "without", "get", "loop", "see", "try", "number",
+                         "assistance", "exotic", "skin", "year", "old","month", "ago","every", "someone", "see", "look",
+                         "customer", "service", "care","connect","team","anything", "else","something", "assist", "would","like",
+                         "answer", "phone", "dispute", "charge", "owner", "make", "kind", "word", "burger", "king", "let", 
+                         "know", "even", "though", "insurance", "thanks", "thank",
+                         "amex", "american", "express", "americanexpress", "mastercard", "thank you", "visa", "credit",
+                         "card", "american express", "askamex", "billyjoel", "@billyjoel", "billy", 
                          "to", "hi", "ha", 'tt', 'ts', 'is', 'tnk', 'tnks', 'for', 'day', 'you', 'we', 've', 'now',
                          'wa', 'time', 'good',
                          'great', 'will', 'need', 'tral', 'awesome', 'deal', 'awsome', 'asome', 'on', 'hold', 'central',
@@ -34,7 +39,7 @@ NUM_GRAMS = 2
 # LDA model parameters
 # ----------------------
 # Number of topics
-NUM_TOPICS = 30
+NUM_TOPICS = 15
 # Number of training passes
 NUM_PASSES = 50
 # Document-Topic Density. The lower alpha is, the more likely that
@@ -100,7 +105,7 @@ def wordcloud(word_count_df):
     plt.imshow(wordcloud, interpolation="bilinear")
     plt.axis("off")
     # Save the word cloud image
-    wordcloud.to_file("new_wordcloud.png")
+    wordcloud.to_file("new_wordcloud_post.png")
     print('Word cloud saved\n')
     plt.close('all')
 
@@ -120,7 +125,7 @@ def get_word_count(tweets_text, num_gram):
     # Plot word count graph
     word_count.head(20).sort_values('frequency').plot.barh(
         x='word', y='frequency', title='Word Frequency', figsize=(19, 10))
-    plt.savefig("common_word_frequency.png")
+    plt.savefig("common_word_frequency_post.png")
     print('Word count saved\n')
     plt.close('all')
 
@@ -155,7 +160,7 @@ cleaned_tweets_df = tweets_df.copy(deep=True)
 # parsing tweets
 cleaned_tweets_df['token'] = [text_cleanup(x) for x in tweets_df['tweet']]
 # Save cleaned tweets to file
-save_data_to_pickle("tweets_cleaned_df.csv", cleaned_tweets_df)
+save_data_to_pickle("tweets_cleaned_df_post.csv", cleaned_tweets_df)
 print('Cleaned tweets saved\n')
 
 
@@ -169,8 +174,8 @@ def train_lda_model(token_tweets):
     # Transform doc to a vectorized form by computing frequency of each word
     bow_corpus = [tweets_dict.doc2bow(doc) for doc in token_tweets]
     # Save corpus and dictionary to file
-    MmCorpus.serialize("clean_tweets_corpus.mm", bow_corpus)
-    tweets_dict.save('clean_tweets.dict')
+    MmCorpus.serialize("clean_tweets_corpus_post.mm", bow_corpus)
+    tweets_dict.save('clean_tweets_post.dict')
 
     # Create tf-idf model and then apply transformation to the entire corpus
     tfidf = models.TfidfModel(bow_corpus)
@@ -185,14 +190,14 @@ def train_lda_model(token_tweets):
                                          eta=ETA,
                                          random_state=49)
     # Save LDA model to file
-    lda_model.save('tweets_lda.model')
+    lda_model.save('tweets_lda_post.model')
     print('LDA model saved\n')
 
     # Save all generated topics to a file
     msg = ''
     for idx, topic in lda_model.print_topics(-1):
         msg += 'Topic: {} \nWords: {}\n'.format(idx, topic)
-    save_print_to_file('tweets_lda_topics.csv', msg)
+    save_print_to_file('tweets_lda_topics_post.csv', msg)
 
     # Evaluate LDA model performance
     eval_lda(lda_model, tfidf_corpus, tweets_dict, token_tweets)
@@ -215,9 +220,9 @@ def vis_topics(lda_model, corpus, dict):
     """
     Plot generated topics on an interactive graph
     """
-    lda_data = pyLDAvis.gensim.prepare(lda_model, corpus, dict, mds='mmds')
+    lda_data = pyLDAvis.gensim.prepare(lda_model, corpus, dict, mds='mmds',R=12)
     pyLDAvis.display(lda_data)
-    pyLDAvis.save_html(lda_data, 'lda.html')
+    pyLDAvis.save_html(lda_data, 'lda_post.html')
     print('Topic visual saved\n')
 
 
